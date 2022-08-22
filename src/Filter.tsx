@@ -9,11 +9,13 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Button,
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { FormGroup, FormLabel, CheckBoxTreeSelect } from "./components/forms";
-import { Form, Formik, useFormik } from "formik";
+import { FieldInputProps, Form, Formik, useFormik } from "formik";
 import CloseIcon from "@mui/icons-material/Close";
+import { positions } from "@mui/system";
 
 export interface PropsItemOption {
   label: string;
@@ -21,8 +23,8 @@ export interface PropsItemOption {
   children?: PropsItemOption[];
 }
 
-export type typeFilter = "SELECT_OPTIONS"
-export type propsOption<T = any> = PropsOption[];
+export type typeFilter = "SELECT_OPTIONS";
+export type propsOption = PropsOption[];
 
 export interface PropsOption {
   type: typeFilter;
@@ -30,7 +32,8 @@ export interface PropsOption {
   label?: string;
   required?: boolean;
   items?: PropsItemOption[];
-  initialValue?: any[];
+  initialValue?: any[] | any;
+  mutilValue?: boolean;
 }
 
 interface PropsFilterDrawer {
@@ -40,62 +43,98 @@ interface PropsFilterDrawer {
 
 interface PropsSelectOptions extends PropsOption {
   setFieldValue: any;
+  position: number;
+  getFieldProps: (val: number) => FieldInputProps<any>;
 }
 
-const SelectOptions=(props: PropsSelectOptions )=>{
-  const {items, setFieldValue }=props;
-  return(
+const SelectOptions = (props: PropsSelectOptions) => {
+  const {
+    items,
+    setFieldValue,
+    position,
+    getFieldProps,
+    label,
+    initialValue,
+    type,
+  } = props;
+  return (
     <FormControl fullWidth>
-    <InputLabel id="demo-simple-select-label">Age</InputLabel>
-    <Select
-      labelId="demo-simple-select-label"
-      id="demo-simple-select"
-      value={22}
-      label="Age"
-      // onChange={(val) => setFieldValue('data')}
-    >
-   { (items || []).map(e=>(<MenuItem value={e.value}>{e.label}</MenuItem>))}
-    </Select>
-  </FormControl>
-  )
-}
+      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
+      <Select
+        labelId="demo-simple-select-label"
+        id="demo-simple-select"
+        value={initialValue}
+        label={label}
+        onChange={(val) => {
+          let dataField = getFieldProps(position);
+          dataField.value = {
+            ...dataField.value,
+            initialValue: val.target?.value,
+          };
+          setFieldValue(position, dataField.value);
+        }}
+      >
+        {(items || []).map((e) => (
+          <MenuItem value={e.value}>{e.label}</MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+};
 
-interface PropsFormItem{
+interface PropsFormItem {
+  position: number;
   item: PropsOption;
   setFieldValue: any;
+  getFieldProps: (val: number) => FieldInputProps<any>;
 }
 
-const FormItem = <TValue extends any>({item, setFieldValue}:PropsFormItem)=>{
-  switch(item.type){
-    case 'SELECT_OPTIONS':{
-      return(
-        <SelectOptions {...item} setFieldValue={setFieldValue}/>
-      )
+const FormItem = <TValue extends any>({
+  item,
+  setFieldValue,
+  position,
+  getFieldProps,
+}: PropsFormItem) => {
+  switch (item.type) {
+    case "SELECT_OPTIONS": {
+      return (
+        <SelectOptions
+          {...item}
+          setFieldValue={setFieldValue}
+          position={position}
+          getFieldProps={getFieldProps}
+        />
+      );
     }
-    default: break;
+    default:
+      break;
   }
-
-  return(
-    <div>
-      {item.label}
-    </div>
-  )
-}
+  return <div>{item.label}</div>;
+};
 
 const Filter = ({ onFilter, options }: PropsFilterDrawer) => {
-
-  const { values, getFieldProps, handleSubmit, setFieldValue } =
-    useFormik<{data: propsOption}>({
-      initialValues: {data: options},
-      onSubmit: (values) => {
-        console.log(values);
-      },
-    });
+  const { values, getFieldProps, handleSubmit, setFieldValue,submitForm } = useFormik<
+    Record<number, PropsOption>
+  >({
+    initialValues: Object.assign({}, options),
+    onSubmit: (values) => {
+      console.log(values);
+    },
+  });
 
   return (
-    <div style={{ marginTop: 40 }}>
+    <div style={{padding:50 }}>
       <form onSubmit={handleSubmit}>
-        {values.data.map((item)=><FormItem item={item} setFieldValue={setFieldValue}/>)}
+        {Object.keys(values).map((key) => (
+          <FormItem
+            key={key}
+            position={Number(key)}
+            item={values[Number(key)]}
+            setFieldValue={setFieldValue}
+            getFieldProps={getFieldProps}
+          />
+        ))}
+        <Button style={{marginTop:50}} variant="contained" onClick={submitForm}>Submit</Button>
       </form>
     </div>
   );
