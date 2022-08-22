@@ -1,26 +1,29 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import FilterDrawer, { propsOption } from "./Filter";
 
-function App() {
+const filterOptions: propsOption = [
+  {
+    type: "SELECT_OPTIONS",
+    name: "type",
+    label: "Products - Services",
+    required: false,
+    items: [
+      {
+        label: "abc",
+        value: 1,
+      },
+      {
+        label: "222",
+        value: 2,
+      },
+    ],
+  }
+];
+
+export default () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <FilterDrawer onFilter={() => {}} options={filterOptions} />
     </div>
   );
-}
-
-export default App;
+};
