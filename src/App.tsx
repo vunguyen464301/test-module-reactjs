@@ -1,7 +1,7 @@
 import React from "react";
 import FilterDrawer, { propsOptions } from "./Filter";
 
-const filterOptions: propsOptions = [
+const filterOptions: propsOptions<{ type: any }> = [
   {
     type: "SELECT_OPTIONS",
     name: "type",
@@ -17,13 +17,18 @@ const filterOptions: propsOptions = [
         value: 2,
       },
     ],
-  }
+  },
 ];
 
 export default () => {
   return (
     <div>
-      <FilterDrawer onFilter={() => {}} options={filterOptions} />
+      <FilterDrawer
+        onFilter={(val) => {
+          console.log(val);
+        }}
+        options={filterOptions}
+      />
     </div>
   );
 };

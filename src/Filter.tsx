@@ -25,15 +25,15 @@ import CloseIcon from "@mui/icons-material/Close";
 import { positions } from "@mui/system";
 
 export type typeFilter = "SELECT_OPTIONS";
-export type propsOptions = IOption[];
+export type propsOptions<TName> = IOption<TName>[];
 export interface IItemOption {
   label: string;
   value: any;
   children?: IItemOption[];
 }
-export interface IOption {
+export interface IOption<TName> {
   type: typeFilter;
-  name: string;
+  name: Extract<keyof TName, string>;
   label?: string;
   required?: boolean;
   items?: IItemOption[];
@@ -41,12 +41,12 @@ export interface IOption {
   mutilValue?: boolean;
 }
 
-interface IFilterDrawer {
-  onFilter: any;
-  options: propsOptions;
+interface IFilterDrawer<TName> {
+  onFilter: (val: Record<Extract<keyof TName, string>, unknown>) => void;
+  options: propsOptions<TName>;
 }
 
-const FormItem = (props: IOption) => {
+const FormItem = <TName extends any>(props: IOption<TName>) => {
   const { name, items } = props;
   return (
     <Field as="select" name={name}>
@@ -60,10 +60,14 @@ const FormItem = (props: IOption) => {
   );
 };
 
-// PropsOption
-const Filter = ({ onFilter, options }: IFilterDrawer) => {
-  const convertKey = (options: propsOptions) => {
-    const keys: Record<string, unknown> = {};
+const Filter = <TName extends any>({
+  onFilter,
+  options,
+}: IFilterDrawer<TName>) => {
+  const convertKey = (): Record<Extract<keyof TName, string>, unknown> => {
+    const keys:
+      | Record<Extract<keyof TName, string>, unknown>
+      | Record<string, unknown> = {};
     options.forEach((item) => {
       keys[item.name] = "";
     });
@@ -73,10 +77,11 @@ const Filter = ({ onFilter, options }: IFilterDrawer) => {
   return (
     <div style={{ padding: 50 }}>
       <Formik
-        initialValues={convertKey(options)}
+        initialValues={convertKey()}
         onSubmit={(values, actions) => {
           alert(JSON.stringify(values, null, 2));
           actions.setSubmitting(false);
+          onFilter(values);
         }}
       >
         {(props: FormikProps<Record<string, unknown>>) => (
