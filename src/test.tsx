@@ -29,8 +29,8 @@ const heads: HeadCell<any>[] = [
 
 const rows = [
   {
-    firstname1: "John",
-    lastname1: "Adams",
+    firstname: "John",
+    lastname: "Adams",
   },
   {
     firstname: "Paul",

@@ -1,10 +1,10 @@
 import React from "react";
 import FilterDrawer, { propsOptions } from "./Filter";
 
-const filterOptions: propsOptions<{ type: any }> = [
+const filterOptions: propsOptions<{ age: string; text: string }> = [
   {
     type: "SELECT_OPTIONS",
-    name: "type",
+    name: "age",
     label: "Products - Services",
     required: false,
     items: [
@@ -13,7 +13,7 @@ const filterOptions: propsOptions<{ type: any }> = [
         value: 1,
       },
       {
-        label: "222",
+        label: "xyz",
         value: 2,
       },
     ],

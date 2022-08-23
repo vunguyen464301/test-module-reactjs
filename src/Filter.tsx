@@ -25,28 +25,31 @@ import CloseIcon from "@mui/icons-material/Close";
 import { positions } from "@mui/system";
 
 export type typeFilter = "SELECT_OPTIONS";
-export type propsOptions<TName> = IOption<TName>[];
+export type propsOptions<DataType> = IOption<DataType>[];
 export interface IItemOption {
   label: string;
   value: any;
   children?: IItemOption[];
 }
-export interface IOption<TName> {
+export interface IOption<DataType> {
   type: typeFilter;
-  name: Extract<keyof TName, string>;
+  /**
+   * require string for field name
+   */
+  name: Extract<keyof DataType, string>;
   label?: string;
   required?: boolean;
   items?: IItemOption[];
-  value?: any[] | any;
+  value?: number | string | number[] | string[];
   mutilValue?: boolean;
 }
 
-interface IFilterDrawer<TName> {
-  onFilter: (val: Record<Extract<keyof TName, string>, unknown>) => void;
-  options: propsOptions<TName>;
+interface IFilterDrawer<DataType> {
+  onFilter: (val: DataType) => void;
+  options: propsOptions<DataType>;
 }
 
-const FormItem = <TName extends any>(props: IOption<TName>) => {
+const SelectOption = <DataType extends any>(props: IOption<DataType>) => {
   const { name, items } = props;
   return (
     <Field as="select" name={name}>
@@ -60,16 +63,27 @@ const FormItem = <TName extends any>(props: IOption<TName>) => {
   );
 };
 
-const Filter = <TName extends any>({
+const FormItem = <DataType extends any>(props: IOption<DataType>) => {
+  switch (props.type) {
+    case "SELECT_OPTIONS": {
+      return <SelectOption {...props} />;
+    }
+    default:
+      return null;
+  }
+};
+
+const Filter = <DataType extends any>({
   onFilter,
   options,
-}: IFilterDrawer<TName>) => {
-  const convertKey = (): Record<Extract<keyof TName, string>, unknown> => {
-    const keys:
-      | Record<Extract<keyof TName, string>, unknown>
-      | Record<string, unknown> = {};
+}: IFilterDrawer<DataType>) => {
+  const convertValues = (): Record<
+    Extract<keyof DataType, string>,
+    unknown
+  > => {
+    const keys: DataType | any = {};
     options.forEach((item) => {
-      keys[item.name] = "";
+      keys[item.name] = item.value;
     });
     return keys;
   };
@@ -77,14 +91,20 @@ const Filter = <TName extends any>({
   return (
     <div style={{ padding: 50 }}>
       <Formik
-        initialValues={convertKey()}
+        initialValues={convertValues()}
         onSubmit={(values, actions) => {
-          alert(JSON.stringify(values, null, 2));
-          actions.setSubmitting(false);
-          onFilter(values);
+          // alert(JSON.stringify(values, null, 2));
+          // actions.setSubmitting(false);
+          const keys: DataType | any = {};
+          options.forEach((item) => {
+            keys[item.name] = values[item.name];
+          });
+          onFilter(keys);
         }}
       >
-        {(props: FormikProps<Record<string, unknown>>) => (
+        {(
+          props: FormikProps<Record<Extract<keyof DataType, string>, unknown>>
+        ) => (
           <Form>
             {options.map((optionFilter, index) => (
               <FormItem key={index} {...optionFilter} />
