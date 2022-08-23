@@ -1,7 +1,7 @@
 import React from "react";
-import FilterDrawer, { propsOption } from "./Filter";
+import FilterDrawer, { propsOptions } from "./Filter";
 
-const filterOptions: propsOption = [
+const filterOptions: propsOptions = [
   {
     type: "SELECT_OPTIONS",
     name: "type",

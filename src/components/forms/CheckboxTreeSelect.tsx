@@ -6,7 +6,6 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { styled, css } from "@mui/material/styles";
-import { PropsItemOption } from "../../Filter";
 
 const Wrapper = styled(Box)(
   ({ theme }) => css`

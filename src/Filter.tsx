@@ -13,129 +13,81 @@ import {
 } from "@mui/material";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import { FormGroup, FormLabel, CheckBoxTreeSelect } from "./components/forms";
-import { FieldInputProps, Form, Formik, useFormik } from "formik";
+import {
+  Field,
+  FieldInputProps,
+  Form,
+  Formik,
+  FormikProps,
+  useFormik,
+} from "formik";
 import CloseIcon from "@mui/icons-material/Close";
 import { positions } from "@mui/system";
 
-export interface PropsItemOption {
+export type typeFilter = "SELECT_OPTIONS";
+export type propsOptions = IOption[];
+export interface IItemOption {
   label: string;
   value: any;
-  children?: PropsItemOption[];
+  children?: IItemOption[];
 }
-
-export type typeFilter = "SELECT_OPTIONS";
-export type propsOption = PropsOption[];
-
-export interface PropsOption {
+export interface IOption {
   type: typeFilter;
   name: string;
   label?: string;
   required?: boolean;
-  items?: PropsItemOption[];
-  initialValue?: any[] | any;
+  items?: IItemOption[];
+  value?: any[] | any;
   mutilValue?: boolean;
 }
 
-interface PropsFilterDrawer {
+interface IFilterDrawer {
   onFilter: any;
-  options: propsOption;
+  options: propsOptions;
 }
 
-interface PropsSelectOptions extends PropsOption {
-  setFieldValue: any;
-  position: number;
-  getFieldProps: (val: number) => FieldInputProps<any>;
-}
-
-const SelectOptions = (props: PropsSelectOptions) => {
-  const {
-    items,
-    setFieldValue,
-    position,
-    getFieldProps,
-    label,
-    initialValue,
-    type,
-  } = props;
+const FormItem = (props: IOption) => {
+  const { name, items } = props;
   return (
-    <FormControl fullWidth>
-      <InputLabel id="demo-simple-select-label">{label}</InputLabel>
-      <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        value={initialValue}
-        label={label}
-        onChange={(val) => {
-          let dataField = getFieldProps(position);
-          dataField.value = {
-            ...dataField.value,
-            initialValue: val.target?.value,
-          };
-          setFieldValue(position, dataField.value);
-        }}
-      >
-        {(items || []).map((e) => (
-          <MenuItem value={e.value}>{e.label}</MenuItem>
-        ))}
-      </Select>
-    </FormControl>
+    <Field as="select" name={name}>
+      <option value={""}>------</option>
+      {items?.map((item, index) => (
+        <option key={index} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+    </Field>
   );
 };
 
-interface PropsFormItem {
-  position: number;
-  item: PropsOption;
-  setFieldValue: any;
-  getFieldProps: (val: number) => FieldInputProps<any>;
-}
-
-const FormItem = <TValue extends any>({
-  item,
-  setFieldValue,
-  position,
-  getFieldProps,
-}: PropsFormItem) => {
-  switch (item.type) {
-    case "SELECT_OPTIONS": {
-      return (
-        <SelectOptions
-          {...item}
-          setFieldValue={setFieldValue}
-          position={position}
-          getFieldProps={getFieldProps}
-        />
-      );
-    }
-    default:
-      break;
-  }
-  return <div>{item.label}</div>;
-};
-
-const Filter = ({ onFilter, options }: PropsFilterDrawer) => {
-  const { values, getFieldProps, handleSubmit, setFieldValue,submitForm } = useFormik<
-    Record<number, PropsOption>
-  >({
-    initialValues: Object.assign({}, options),
-    onSubmit: (values) => {
-      console.log(values);
-    },
-  });
+// PropsOption
+const Filter = ({ onFilter, options }: IFilterDrawer) => {
+  const convertKey = (options: propsOptions) => {
+    const keys: Record<string, unknown> = {};
+    options.forEach((item) => {
+      keys[item.name] = "";
+    });
+    return keys;
+  };
 
   return (
-    <div style={{padding:50 }}>
-      <form onSubmit={handleSubmit}>
-        {Object.keys(values).map((key) => (
-          <FormItem
-            key={key}
-            position={Number(key)}
-            item={values[Number(key)]}
-            setFieldValue={setFieldValue}
-            getFieldProps={getFieldProps}
-          />
-        ))}
-        <Button style={{marginTop:50}} variant="contained" onClick={submitForm}>Submit</Button>
-      </form>
+    <div style={{ padding: 50 }}>
+      <Formik
+        initialValues={convertKey(options)}
+        onSubmit={(values, actions) => {
+          alert(JSON.stringify(values, null, 2));
+          actions.setSubmitting(false);
+        }}
+      >
+        {(props: FormikProps<Record<string, unknown>>) => (
+          <Form>
+            {options.map((optionFilter, index) => (
+              <FormItem key={index} {...optionFilter} />
+            ))}
+            <button type="submit">Submit</button>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 };
